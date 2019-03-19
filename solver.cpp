@@ -9,7 +9,9 @@ const int INF = 1e4;
 char board[6][6];
 int turn = 1;
 int num = 0;
+
 int WINPOINT = 1000;
+int EVALPOINT = 100;
 
 void draw()
 {
@@ -107,27 +109,16 @@ bool endGame()
 int eval()
 {
     map<char, int> mp;
-    /*
-    for(int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            int x = i * 3, y = j * 3;
-            if (inRow(x, y, 1, 1, 3) && board[x][y] != '_') {
-                mp[board[x][y]]++;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (inRow(i, j, 1, 1, 3) && board[i][j] != '_') {
+                mp[board[i][j]]++;
             }
-            if (inRow(x+2, y, -1, 1, 3) && board[x+2][y] != '_') {
-                mp[board[x+2][y]]++;
-            }
-
-            for (int k = 0; k < 3; k++) {
-                if (inRow(x+k, y, 1, 0, 3) && board[x+k][y] != '_') {
-                    mp[board[x+k][y]]++;
-                }
-                if (inRow(x, y+k, 0, 1, 3) && board[x][y+k] != '_') {
-                    mp[board[x+k][y]]++;
-                }
+            if (inRow(5-i, j, -1, 1, 3) && board[5-i][j] != '_'){
+                mp[board[5-i][j]]++;
             }
         }
-    }*/
+    }
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 4; j++) {
             if (inRow(i, j, 0, 1, 3) && board[i][j] != '_') {
@@ -140,7 +131,7 @@ int eval()
     }
     double mX = mp['X'], mO = mp['O'];
     double all = max(1.0, mX + mO);
-    return (mX * 50.0 / all) - (mO * 50.0 / all);
+    return (mX * EVALPOINT / all) - (mO * EVALPOINT / all);
 }
 
 int negamax(int col, int d, int alpha, int beta, int maxd)
