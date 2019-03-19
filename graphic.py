@@ -94,6 +94,7 @@ r = 30
 rimg = pygame.image.load("img/iright.png")
 limg = pygame.image.load("img/ileft.png")
 disp = pygame.display.set_mode((W, W))
+font = pygame.font.Font(None, 128)
 clock = pygame.time.Clock()
 
 board = np.zeros((6,6), dtype=User)
@@ -113,12 +114,6 @@ running = True
 
 while running:
     if sum(points) > 0:
-        if points[0] == points[1] or points[2] == 1:
-            print("draw")
-        elif points[0] > points[1]:
-            print("PC wins")
-        else:
-            print("You win")
         running = False
         break
 
@@ -172,6 +167,18 @@ while running:
 
     clock.tick(60)
 
+text = 'null'
+if points[0] == points[1] or points[2] == 1:
+    text = "draw"
+elif points[0] > points[1]:
+    text = "PC wins"
+else:
+    text = "You win"
+
+box = font.render(text, True, (255,128,0))
+wb, hb = box.get_size()
+disp.blit(box, ((W-wb)//2, (W-hb)//2))
+pygame.display.update()
 print("End of Game, Press Quit Button!")
 
 while True:
