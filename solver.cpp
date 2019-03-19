@@ -5,7 +5,7 @@ using namespace std;
 #define X first
 #define Y second
 
-const int INF = 1e4;
+const int INF = 1e5;
 char board[6][6];
 int turn = 1;
 int num = 0;
@@ -169,7 +169,7 @@ int negamax(int col, int d, int alpha, int beta, int maxd)
 pair<int, pair<int,int>> bestMove()
 {
     int maxd = 0, ord = 1, q = 36 - num;
-    while (ord < 1e7) {
+    while (ord < 1e6) {
         ord *= q * 8;
         maxd++;
         q--;
