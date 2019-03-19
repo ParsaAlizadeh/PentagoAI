@@ -9,6 +9,7 @@ const int INF = 1e4;
 char board[6][6];
 int turn = 1;
 int num = 0;
+int WINPOINT = 1000;
 
 void draw()
 {
@@ -53,13 +54,16 @@ void rotPlate(int plate , int k)
             board[i][j] = s[(i - x) * 3 + j - y];
 }
 
-int inRow(int x, int y, int dx , int dy, int n = 5)
+bool inRow(int x, int y, int dx , int dy, int n = 5)
 {
     int nx = x , ny = y;
     for(int i = 0 ; i < n ; i++) {
-        if (!(0 <= nx && nx < 6 && 0 <= ny && ny < 6))  return 0;
-        if(board[nx][ny] != board[x][y])    return 0;
-        if(i == n-1)  return 1;
+        if (!(0 <= nx && nx < 6 && 0 <= ny && ny < 6))
+            return false;
+        if(board[nx][ny] != board[x][y])
+            return false;
+        if(i == n-1)
+            return true;
         nx += dx;
         ny += dy;
     }
@@ -71,20 +75,20 @@ pair<int , int> winScore()
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             if (inRow(i , j , 1 , 1) && board[i][j] != '_') {
-                mp[board[i][j]] = 100;
+                mp[board[i][j]] = WINPOINT;
             }
             if (inRow(5-i, j, -1, 1) && board[5-i][j] != '_') {
-                mp[board[5-i][j]] = 100;
+                mp[board[5-i][j]] = WINPOINT;
             }
         }
     }
     for(int i = 0 ; i < 6 ; i++) {
         for(int j = 0 ; j < 2 ; j++) {
             if(inRow(i , j , 0 , 1) && board[i][j] != '_') {
-                mp[board[i][j]] = 100;
+                mp[board[i][j]] = WINPOINT;
             }
             if(inRow(j , i , 1 , 0) && board[j][i] != '_') {
-                mp[board[j][i]] = 100;
+                mp[board[j][i]] = WINPOINT;
             }
        }
     }
@@ -103,6 +107,7 @@ bool endGame()
 int eval()
 {
     map<char, int> mp;
+    /*
     for(int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             int x = i * 3, y = j * 3;
@@ -114,7 +119,7 @@ int eval()
             }
 
             for (int k = 0; k < 3; k++) {
-                if (inRow(x+k, y, 0, 1, 3) && board[x+k][y] != '_') {
+                if (inRow(x+k, y, 1, 0, 3) && board[x+k][y] != '_') {
                     mp[board[x+k][y]]++;
                 }
                 if (inRow(x, y+k, 0, 1, 3) && board[x][y+k] != '_') {
@@ -122,9 +127,20 @@ int eval()
                 }
             }
         }
+    }*/
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (inRow(i, j, 0, 1, 3) && board[i][j] != '_') {
+                mp[board[i][j]]++;
+            }
+            if (inRow(j, i, 1, 0, 3) && board[j][i] != '_') {
+                mp[board[j][i]]++;
+            }
+        }
     }
     double mX = mp['X'], mO = mp['O'];
-    return mX * 50.0 / max(1.0, mX + mO);
+    double all = max(1.0, mX + mO);
+    return (mX * 50.0 / all) - (mO * 50.0 / all);
 }
 
 int negamax(int col, int d, int alpha, int beta, int maxd)
@@ -190,6 +206,7 @@ pair<int, pair<int,int>> bestMove()
                         alpha = max(alpha, mx);
                     }
                 }
+                //cout << mx << endl;
             }
         }
     }
@@ -215,6 +232,8 @@ int main()
         board[x][y] = 'O';
         rotPlate(pl, k);
     }
+
+    //cout << "eval: " << eval() << endl;
 
     score = winScore();
     if (endGame() || score.X > 0 || score.Y > 0) {
