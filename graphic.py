@@ -177,6 +177,7 @@ while running:
     clock.tick(60)
 
 print("End of Game, Press Quit Button!")
+
 while True:
     for e in pygame.event.get():
         if e.type == QUIT:
