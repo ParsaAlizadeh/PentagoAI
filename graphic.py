@@ -1,5 +1,6 @@
 from enum import Enum
 from os import system
+from threading import Thread
 import numpy as np
 import pygame, time
 from pygame.locals import *
@@ -64,28 +65,23 @@ def solve():
     cp[board==User.Null] = '_'
     cp[board==User.PC] = 'X'
     cp[board==User.Human] = 'O'
-    np.savetxt("in.txt", cp, fmt = '%s', delimiter=' ')
-    file = open("in.txt", "a")
-    file.write(" ".join(map(str, last)))
-    file.close()
+    np.savetxt("log/in.txt", cp, fmt = '%s', delimiter=' ')
 
     system("./solver.o")
-    cp = np.loadtxt("out.txt", dtype=str, delimiter=" ")
 
-    if len(cp) <= 2:
-        points = list(map(int, cp[0:2]))
-        print(points)
-
-    else:
-        cp = cp[:6, :6]
-        board[cp=='_'] = User.Null
-        board[cp=='X'] = User.PC
-        board[cp=='O'] = User.Human
+    file = open("log/out.txt", "r")
+    data = file.readlines()
+    points = list(map(int, data[0].split()))
+    for i in range(1, 7):
+        cp = np.array(data[i].split(), dtype=str)
+        board[i-1, cp=='_'] = User.Null
+        board[i-1, cp=='X'] = User.PC
+        board[i-1, cp=='O'] = User.Human
 
     return
 
 def wait():
-    pygame.draw.circle(disp, (255,0,0), (W//2, W//2), 100)
+    pygame.draw.circle(disp, (255,0,0), (W//2, W//2), 50)
     pygame.display.update()
     time.sleep(.5)
 
@@ -95,8 +91,8 @@ cmap = {User.Null : (0,0,200),
 
 W = 600
 r = 30
-rimg = pygame.image.load("iright.png")
-limg = pygame.image.load("ileft.png")
+rimg = pygame.image.load("img/iright.png")
+limg = pygame.image.load("img/ileft.png")
 disp = pygame.display.set_mode((W, W))
 clock = pygame.time.Clock()
 
@@ -107,21 +103,17 @@ ay = np.linspace(0, W, 13, dtype=np.int32)[1:-1:2]
 rx = np.linspace(0, W, 7, dtype=np.int32)[[1,2,4,5]]
 ry = np.linspace(0, W, 5, dtype=np.int32)[[1,3]]
 
-
-#board[:4, 0] = User.Human
-
 draw()
 pygame.display.update()
 
 now = Mode.Select
 current = User.Human
-last = [-1, -1, -1, -1]
-points = [-1, -1]
+points = [0, 0, 0]
 running = True
 
 while running:
-    if sum(points) >= 0:
-        if points[0] == points[1]:
+    if sum(points) > 0:
+        if points[0] == points[1] or points[2] == 1:
             print("draw")
         elif points[0] > points[1]:
             print("PC wins")
@@ -149,7 +141,6 @@ while running:
             if ind is not None:
                 i, j = ind
                 board[i, j] = User.Human
-                last[0] = i; last[1] = j
                 now = Mode.Rotate
                 rotdraw()
                 break
@@ -160,18 +151,23 @@ while running:
             if ind is not None:
                 i, j, k = ind
                 pl = i + j*2
-                last[2] = pl; last[3] = k
+                q = board[i*3:(i+1)*3, j*3:(j+1)*3]
+                q[:] = np.rot90(q, -k)
                 now = Mode.Solve
                 current = User.PC
                 draw()
 
+    pygame.display.update()
+
     if current == User.PC and now == Mode.Solve:
-        solve()
+        thr = Thread(target=solve)
+        thr.start()
+        wait()
+        thr.join()
         current = User.Human
         now = Mode.Select
         draw()
 
-    #draw()
     pygame.display.update()
 
     clock.tick(60)
