@@ -215,44 +215,34 @@ pair<int, pair<int,int>> bestMove()
 
 int main()
 {
-    freopen("in.txt" , "r" , stdin);
-    freopen("out.txt" , "w" , stdout);
+    freopen("log/in.txt" , "r" , stdin);
+    freopen("log/out.txt" , "w" , stdout);
 
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
             cin >> board[i][j];
+            num += (board[i][j] != '_');
         }
     }
 
     pair<int, int> score = {0, 0};
-    int x, y, pl, k;
-
-    cin >> x >> y >> pl >> k;
-    if (x >= 0 && y >= 0){
-        board[x][y] = 'O';
-        rotPlate(pl, k);
-    }
-
-    //cout << "eval: " << eval() << endl;
-
     score = winScore();
     if (endGame() || score.X > 0 || score.Y > 0) {
-        cout << score.X << " " << score.Y << endl;
+        cout << score.X << " " << score.Y << " " << (endGame()) << endl;
+        draw();
         return 0;
     }
 
     pair<int, pair<int, int>> move = bestMove();
+    int x, y, pl, k;
     x = move.X / 6; y = move.X % 6;
     pl = move.Y.X; k = move.Y.Y;
     board[x][y] = 'X';
     rotPlate(pl, k);
 
-    score = winScore();
-    if (endGame() || score.X > 0 || score.Y > 0) {
-        cout << score.X << " " << score.Y << endl;
-        return 0;
-    }
 
+    score = winScore();
+    cout << score.X << " " << score.Y << " " << (endGame()) << endl;
     draw();
 
     return 0;
