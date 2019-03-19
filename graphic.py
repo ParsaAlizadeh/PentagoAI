@@ -77,7 +77,6 @@ def solve():
         print(points)
 
     else:
-        print("PC plays")
         cp = cp[:6, :6]
         board[cp=='_'] = User.Null
         board[cp=='X'] = User.PC
@@ -177,4 +176,8 @@ while running:
 
     clock.tick(60)
 
-pygame.quit()
+print("End of Game, Press Quit Button!")
+while True:
+    for e in pygame.event.get():
+        if e.type == QUIT:
+            pygame.quit()
