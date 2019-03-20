@@ -12,6 +12,8 @@ int num = 0;
 
 int WINPOINT = 1000;
 int EVALPOINT = 100;
+long long ORDER = 1e6;
+int MAXD = 0;
 
 void draw()
 {
@@ -168,13 +170,14 @@ int negamax(int col, int d, int alpha, int beta, int maxd)
 
 pair<int, pair<int,int>> bestMove()
 {
-    int maxd = 0, ord = 1, q = 36 - num;
-    while (ord < 1e6) {
+    int maxd = 0, q = 36 - num;
+    long long ord = 1;
+    while (ord < ORDER) {
         ord *= q * 8;
         maxd++;
         q--;
     }
-    //cout << "maxd is " << maxd << endl;
+    MAXD = maxd;
     int mx = -INF, val;
     int maxMove, maxRot, maxClock;
     int alpha = -INF, beta = INF;
@@ -235,6 +238,7 @@ int main()
     score = winScore();
     cout << score.X << " " << score.Y << " " << (endGame()) << endl;
     draw();
+    cout << MAXD << endl;
 
     return 0;
 }
