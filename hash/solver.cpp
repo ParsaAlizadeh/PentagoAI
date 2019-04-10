@@ -8,19 +8,42 @@ typedef pair<ll, ll> pll;
 #define Y second
 #define sep ' '
 
-const ll EVALPOINT = 100;
+const ll EVALPOINT = 100,
+         WINPOINT = 1000;
 
-ll ind[6][6];
+ll ind[6][6],
+   pw[40],
+   rot[ll(2e4)][2];
+
 ll hsh;
-ll pw[40];
-ll rot[ll(2e4)][2];
 
-ll get(ll hsh , ll l , ll r)
+void fillPower()
+{
+    pw[0] = 1;
+    for (int i = 1; i < 40; i++) {
+        pw[i] = pw[i-1] * 3;
+    }
+}
+
+void fillInd()
+{
+    int t = 0;
+    for(int i = 0 ; i < 4 ; i++) {
+        int lx = i % 2 * 3 , ly = i / 2 * 3;
+        for(int j = 0 ; j < 3 ; j++) {
+            for(int k = 0 ; k < 3 ; k++) {
+                ind[lx + j][ly + k] = t++;
+            }
+        }
+    }
+}
+
+ll get(ll hsh, ll l, ll r)
 {
     return hsh % pw[r + 1] / pw[l];
 }
 
-ll get(ll hsh , ll x)
+ll get(ll hsh, ll x)
 {
     return get(hsh, x, x);
 }
@@ -35,24 +58,23 @@ ll modify(ll hsh, ll l, ll r, ll val)
     return hsh % pw[l] + val * pw[l] + hsh / pw[r + 1] * pw[r + 1];
 }
 
-ll modify(ll hsh , ll x , ll val)
+ll modify(ll hsh, ll x, ll val)
 {
-    return modify(hsh , x , x , val);
+    return modify(hsh, x, x, val);
 }
 
 ll draw(ll hsh)
 {
-    for(ll i = 0 ; i < 6 ; i++ , cout << endl)
-    {
-        for(ll j = 0 ; j < 6 ; j++)
-        {
+    for(int i = 0 ; i < 6 ; i++) {
+        for(int j = 0 ; j < 6 ; j++) {
             cout << get(hsh , ind[i][j]) << sep;
         }
+        cout << endl;
     }
     cout << endl;
 }
 
-ll rot90(int in[3][3] ,int k)
+ll rot90(int in[3][3], int k)
 {
     int tmp[3][3];
     ll ans = 0;
@@ -76,11 +98,13 @@ ll rotPlate(ll hsh, ll ind, ll k)
     return modify(hsh, l, r, plate);
 }
 
-ll preprocess()
+void preprocess()
 {
-    for (ll i = 0; i < pw[9]; i++) {
+    fillPower();
+    fillInd();
+    for (int i = 0; i < pw[9]; i++) {
         int tmp[3][3];
-        for (ll j = 0; j < 3; j++) {
+        for (int j = 0; j < 3; j++) {
             for (ll k = 0; k < 3; k++) {
                 tmp[j][k] = get(i, ind[j][k]);
             }
@@ -90,60 +114,74 @@ ll preprocess()
     }
 }
 
-pll calcEval(ll hsh , ll x , ll y , ll dx , ll dy)
+pll calcEval(ll hsh, int x, int y, int dx, int dy, int n)
 {
-    ll cnt[3] = {0 , 0 , 0};
-    ll t = 1 , cur = get(hsh , ind[x][y]);
-    while(0 <= x && x < 6 && 0 <= y && y < 6)
-    {
-        if(get(hsh , ind[i][j]) == cur) t++;
-        else
-        {
-            cnt[cur] += max(t - 2 , 0LL);
+    int cnt[3] = {0 , 0 , 0};
+    int t = 1 , cur = get(hsh , ind[x][y]);
+    x += dx; y += dy;
+    while(0 <= x && x < 6 && 0 <= y && y < 6) {
+        if(get(hsh , ind[x][y]) == cur)
+            t++;
+        else {
+            cnt[cur] += max(t - n + 1 , 0);
             t = 1;
-            cur = get(hsh , ind[i][j]);
+            cur = get(hsh , ind[x][y]);
         }
         x += dx;
         y += dy;
     }
-    cnt[cur] += max(t - 2 , 0LL);
+    cnt[cur] += max(t - n + 1 , 0);
     return {cnt[1] , cnt[2]};
 }
 
 ll eval(ll hsh)
 {
-    ll cnt[3] = {0 , 0 , 0};
-    for(ll i = 0 ; i < 6 ; i++)
-    {
-        pll p = calcEval(hsh , 0 , i , 1 , 0);
+    int cnt[3] = {0, 0, 0};
+    pll p;
+    for(int i = 0 ; i < 6 ; i++) {
+        p = calcEval(hsh, 0, i, 1, 0, 3);
         cnt[1] += p.X;
         cnt[2] += p.Y;
-        p = calcEval(hsh , i , 0 , 0 , 1);
+
+        p = calcEval(hsh, i, 0, 0, 1, 3);
         cnt[1] += p.X;
         cnt[2] += p.Y;
     }
-
     double all = cnt[1] + cnt[2];
     return (cnt[1] * EVALPOINT / all) - (cnt[2] * EVALPOINT / all);
 }
 
+pll winScore(ll hsh)
+{
+    int score[3] = {0, 0, 0};
+    pll p;
+    for (int i = 0; i < 6; i++) {
+        p = calcEval(hsh, i, 0, 0, 1, 5);
+        score[1] |= min(1LL, p.X);
+        score[2] |= min(1LL, p.Y);
+
+        p = calcEval(hsh, 0, i, 1, 0, 5);
+        score[1] |= min(1LL, p.X);
+        score[2] |= min(1LL, p.Y);
+    }
+    int bx[3] = {0, 0, 1},
+       by[3] = {0, 1, 0};
+    for (int i = 0; i < 3; i++) {
+        p = calcEval(hsh, bx[i], by[i], 1, 1, 5);
+        score[1] |= min(1LL, p.X);
+        score[2] |= min(1LL, p.Y);
+
+        p = calcEval(hsh, 5-bx[i], by[i], -1, 1, 5);
+        score[1] |= min(1LL, p.X);
+        score[2] |= min(1LL, p.Y);
+    }
+    return {score[1]*WINPOINT, score[2]*WINPOINT};
+}
+
 int main()
 {
-    pw[0] = 1;
-    for(ll i = 1 ; i < 40 ; i++)    pw[i] = pw[i - 1] * 3;
+    preprocess();
 
-    ll t = 0;
-    for(ll i = 0 ; i < 4 ; i++)
-    {
-        ll lx = i % 2 * 3 , ly = i / 2 * 3;
-        for(ll j = 0 ; j < 3 ; j++)
-        {
-            for(ll k = 0 ; k < 3 ; k++)
-            {
-                ind[lx + j][ly + k] = t++;
-            }
-        }
-    }
 
     /*
     for(ll i = 0 ; i < 6 ; i++)
@@ -155,30 +193,20 @@ int main()
         cout << endl;
     } */
 
-    /*
-    for(ll i = 0 ; i < 6 ; i++)
-    {
-        for(ll j = 0 ; j < 6 ; j++)
-        {
-            char x;
-            cin >> x;
-            hsh += getValue(x) * pw[ind[i][j]];
-        }
-    } */
-
-    preprocess();
     ll hsh = 0;
     draw(hsh);
-    hsh = modify(hsh, 0, 2, 13);
-    hsh = modify(hsh, 3, 5, pw[3]-1);
-    draw(hsh);
 
-    ll p, k;
+    int t, p, k;
     while (true) {
-        cin >> p >> k;
-        hsh = rotPlate(hsh, p, k);
+        cin >> t >> p;
+        if (t == 2) {
+            cin >> k;
+            hsh = rotPlate(hsh, p, k);
+        }
+        else {
+            hsh = modify(hsh, p, 1);
+        }
         draw(hsh);
-        cout << eval(hsh) << endl;
     }
 
     return 0;
