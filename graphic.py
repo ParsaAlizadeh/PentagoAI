@@ -16,6 +16,8 @@ class User(Enum):
     Human = 1
     PC = 2
 
+SOLVER = "hashsolver.o"
+
 def draw():
     disp.fill((0,150,255))
     pygame.draw.line(disp, (0,0,0), (W//2,0), (W//2,W), 5)
@@ -67,7 +69,8 @@ def solve():
     cp[board==User.Human] = 'O'
     np.savetxt("log/in.txt", cp, fmt = '%s', delimiter=' ')
 
-    system("./solver.o")
+    cmd = "./" + SOLVER + "< ./log/in.txt > ./log/out.txt"
+    system(cmd)
 
     file = open("log/out.txt", "r")
     data = file.readlines()

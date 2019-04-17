@@ -209,8 +209,6 @@ pair<int, pair<int,int>> bestMove()
 
 int main()
 {
-    freopen("log/in.txt" , "r" , stdin);
-    freopen("log/out.txt" , "w" , stdout);
 
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
