@@ -11,7 +11,7 @@ typedef pair<ll, ll> pll;
 const ll EVALPOINT = 100,
          WINPOINT = 1000,
          INF = 1e9,
-         ORDER = 2e8;
+         ORDER = 1.5e8;
 
 ll ind[6][6],
    pw[40],
@@ -246,7 +246,7 @@ int main()
         maxd++;
     }
 
-    pll res = negamax(hsh, +1, d, -INF, INF, maxd);
+    pll res = negamax(hsh, +1, d, -WINPOINT, WINPOINT, maxd);
     ll next = res.Y;
     scores = winScore(next);
     cout << scores.X << sep << scores.Y << sep << (d == 36) << endl;

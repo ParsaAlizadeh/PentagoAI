@@ -13,8 +13,8 @@ class Mode(Enum):
 
 class User(Enum):
     Null = 0
-    Human = 1
-    PC = 2
+    PC1 = 1
+    PC2 = 2
 
 SOLVER = "solvers/hashsolver.o"
 
@@ -60,13 +60,17 @@ def getrot(xm, ym):
                     return i,j,-1
     return None
 
-def solve():
+def solve(cur):
     global board, points, last
 
     cp = np.zeros((6, 6), dtype=str)
     cp[board==User.Null] = '_'
-    cp[board==User.PC] = 'X'
-    cp[board==User.Human] = 'O'
+    if cur == User.PC1:
+        cp[board==User.PC1] = 'X'
+        cp[board==User.PC2] = 'O'
+    else:
+        cp[board==User.PC2] = 'X'
+        cp[board==User.PC1] = 'O'
     np.savetxt("log/in.txt", cp, fmt = '%s', delimiter=' ')
 
     cmd = "./" + SOLVER + "< ./log/in.txt > ./log/out.txt"
@@ -78,19 +82,22 @@ def solve():
     for i in range(1, 7):
         cp = np.array(data[i].split(), dtype=str)
         board[i-1, cp=='_'] = User.Null
-        board[i-1, cp=='X'] = User.PC
-        board[i-1, cp=='O'] = User.Human
-
+        if cur == User.PC1:
+            board[i-1, cp=='X'] = User.PC1
+            board[i-1, cp=='O'] = User.PC2
+        else:
+            board[i-1, cp=='X'] = User.PC2
+            board[i-1, cp=='O'] = User.PC1
     return
 
 def wait():
     pygame.draw.circle(disp, (255,0,0), (W//2, W//2), 50)
     pygame.display.update()
-    time.sleep(.5)
+    time.sleep(1)
 
 cmap = {User.Null : (0,0,200),
-        User.PC   : (255,255,255),
-        User.Human: (0,0,0)}
+        User.PC1   : (255,255,255),
+        User.PC2: (0,0,0)}
 
 W = 600
 r = 30
@@ -111,8 +118,8 @@ ry = np.linspace(0, W, 5, dtype=np.int32)[[1,3]]
 draw()
 pygame.display.update()
 
-now = Mode.Select
-current = User.Human
+now = Mode.Solve
+current = User.PC1
 points = [0, 0, 0]
 running = True
 
@@ -163,13 +170,16 @@ while running:
 
     pygame.display.update()
 
-    if current == User.PC and now == Mode.Solve:
-        thr = Thread(target=solve)
+    if current != User.Null and now == Mode.Solve:
+        thr = Thread(target=solve, args=(current,))
         thr.start()
         wait()
         thr.join()
-        current = User.Human
-        now = Mode.Select
+        if current == User.PC1:
+            current = User.PC2
+        else:
+            current = User.PC1
+        now = Mode.Solve
         draw()
 
     pygame.display.update()
@@ -181,9 +191,9 @@ print(points)
 if (points[0] == points[1] and points[0] != 0) or points[2] == 1:
     text = "draw"
 elif points[0] > points[1]:
-    text = "PC wins"
+    text = "PC1 wins"
 elif points[1] > points[0]:
-    text = "You win"
+    text = "PC2 wins"
 else:
     text = "Press again"
 
