@@ -161,11 +161,6 @@ while running:
             if e.key == K_z and last is not None:
                 board[:] = last
 
-            if e.key == K_r:
-                board[:] = User.Null
-                current = User.Human
-                now = Mode.Select
-
     pygame.display.update()
 
     if current == User.PC and now == Mode.Solve:
