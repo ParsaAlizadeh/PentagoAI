@@ -16,7 +16,7 @@ class User(Enum):
     Human = 1
     PC = 2
 
-SOLVER = "hashsolver.o"
+SOLVER = "solvers/hashsolver.o"
 
 def draw():
     disp.fill((0,150,255))
@@ -102,6 +102,7 @@ clock = pygame.time.Clock()
 
 board = np.zeros((6,6), dtype=User)
 board[:][:] = User.Null
+last = None
 ax = np.linspace(0, W, 13, dtype=np.int32)[1:-1:2]
 ay = np.linspace(0, W, 13, dtype=np.int32)[1:-1:2]
 rx = np.linspace(0, W, 7, dtype=np.int32)[[1,2,4,5]]
@@ -137,6 +138,7 @@ while running:
             xm, ym = e.pos
             ind = getcell(xm, ym)
             if ind is not None:
+                last = board.copy()
                 i, j = ind
                 board[i, j] = User.Human
                 now = Mode.Rotate
@@ -155,6 +157,10 @@ while running:
                 current = User.PC
                 draw()
 
+        if e.type == KEYDOWN:
+            if e.key == K_z and last is not None:
+                board[:] = last
+
     pygame.display.update()
 
     if current == User.PC and now == Mode.Solve:
@@ -171,12 +177,15 @@ while running:
     clock.tick(60)
 
 text = 'null'
-if points[0] == points[1] or points[2] == 1:
+print(points)
+if (points[0] == points[1] and points[0] != 0) or points[2] == 1:
     text = "draw"
 elif points[0] > points[1]:
     text = "PC wins"
-else:
+elif points[1] > points[0]:
     text = "You win"
+else:
+    text = "Press again"
 
 box = font.render(text, True, (255,128,0))
 wb, hb = box.get_size()

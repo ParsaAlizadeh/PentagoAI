@@ -11,7 +11,7 @@ typedef pair<ll, ll> pll;
 const ll EVALPOINT = 100,
          WINPOINT = 1000,
          INF = 1e9,
-         ORDER = 5e8;
+         ORDER = 2e8;
 
 ll ind[6][6],
    pw[40],
