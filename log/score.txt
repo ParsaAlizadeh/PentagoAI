@@ -1,0 +1,3 @@
+Parsa,13
+Kavi,20
+haji,3
