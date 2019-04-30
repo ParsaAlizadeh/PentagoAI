@@ -1,8 +1,9 @@
-0 1000 0
-X X X X O X 
-X X O O X O 
-_ _ O X O X 
-O _ O X O _ 
-_ _ O O _ X 
-O _ O X O _ 
+1000 0 0
+X X _ _ _ _ 
+_ X _ _ _ _ 
+_ X _ _ _ _ 
+O X O _ _ _ 
+O X _ _ _ _ 
+O O O _ _ _ 
 
+11 14 7065600 1000

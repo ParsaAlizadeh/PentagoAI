@@ -127,7 +127,7 @@ void preprocess()
         st.insert({{i , 0} , {0 , 1}});
     }
 
-    for(ll i = 0 ; i < 4 ; i++)
+    for(ll i = 0 ; i < 5 ; i++)
     {
         st.insert({{0 , i} , {1 , 1}});
         st.insert({{i , 0} , {1 , 1}});
@@ -163,7 +163,7 @@ ll eval(ll hsh)
     int cnt[3] = {0, 0, 0};
     pll q;
     for(pair<pll , pll> p : starts) {
-        q = inRow(hsh, p.X.X , p.X.Y , p.Y.X , p.Y.Y, 3);
+        q = inRow(hsh, p.X.X , p.X.Y , p.Y.X , p.Y.Y, 2);
         cnt[1] += q.X;
         cnt[2] += q.Y;
     }

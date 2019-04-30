@@ -1,3 +1,6 @@
-Parsa,13
-Kavi,20
-haji,3
+kooshan,17
+kooshan,19
+razavi,22
+kooshan,24
+parsa,27
+ali,26

@@ -5,6 +5,7 @@ import numpy as np
 import pygame, time
 from pygame.locals import *
 from welcome import getName
+import sys
 
 pygame.init()
 
@@ -36,7 +37,7 @@ def draw():
             pygame.draw.circle(disp, cmap[q], (ax[i], ay[j]), r)
 
     (bestname, best), avg = getSummary()
-    t1 = getFont(64).render("Best Score:", True, (255, 0, 0))
+    t1 = getFont(64).render("Best Loser:", True, (255, 0, 0))
     t2 = getFont(54).render(bestname + " -> " + str(best), True, (255, 0, 0))
     w1, h1 = t1.get_size()
     w2, h2 = t2.get_size()
@@ -56,6 +57,19 @@ def draw():
     w2, h2 = t2.get_size()
     disp.blit(t1, (W + (W_score - w1) // 2, sy[2] - (h1 + h2) // 2))
     disp.blit(t2, (W + (W_score - w2) // 2, sy[2] - (h1 + h2) // 2 + h1))
+
+    box = pygame.surface.Surface((W_score, W))
+    t1 = getFont(64).render("Winners:", True, (255, 255, 0))
+    w1, h1 = t1.get_size()
+    box.blit(t1, ((W_score-w1)//2, 0))
+    xp = scoreboard["xp"]
+    for name, x in scoreboard[xp % 2 == 1]:
+        t2 = getFont(54).render(name+" -> "+ str(x), True, (255, 255, 0))
+        w2, h2 = t2.get_size()
+        box.blit(t2, ((W_score-w2)//2, h1))
+        h1 += h2
+
+    disp.blit(box, (W+W_score, sy[0]))
 
 
 def rotdraw():
@@ -129,8 +143,10 @@ def getFont(size):
 
 
 def getSummary():
-    ind = np.argmax(scoreboard[:, 1])
-    avg = np.mean(scoreboard[:, 1])
+    xp = scoreboard["xp"].copy()
+    xp[xp % 2 == 1] = -1
+    ind = np.argmax(xp)
+    avg = np.mean(xp[xp != -1])
     return scoreboard[ind], round(avg, 2)
 
 
@@ -143,7 +159,7 @@ W_score = 300
 r = 30
 rimg = pygame.image.load("img/iright.png")
 limg = pygame.image.load("img/ileft.png")
-disp = pygame.display.set_mode((W + W_score, W))
+disp = pygame.display.set_mode((W + 2*W_score, W))
 font = pygame.font.Font(None, 128)
 clock = pygame.time.Clock()
 
@@ -156,10 +172,16 @@ rx = np.linspace(0, W, 7, dtype=np.int32)[[1, 2, 4, 5]]
 ry = np.linspace(0, W, 5, dtype=np.int32)[[1, 3]]
 sy = np.linspace(0, W, 7, dtype=np.int32)[1:-1:2]
 
-scoreboard = np.loadtxt("./log/score.txt",
-                        dtype=object,
-                        delimiter=",", )
-scoreboard[:, 1] = np.int64(scoreboard[:, 1])
+scorefile = np.loadtxt("./log/score.txt",
+                        delimiter=",",
+                        dtype=str)
+scorefile[:, 1] = np.int64(scorefile[:, 1])
+dt = np.dtype([("name", np.unicode_, 32), ("xp", np.int_)])
+n_record = len(scorefile)
+scoreboard = np.empty((n_record,), dtype=dt)
+scoreboard["name"] = scorefile[:, 0]
+scoreboard["xp"] = scorefile[:, 1]
+scoreboard = np.sort(scoreboard, order=("xp"))
 score = 0
 
 draw()
@@ -240,10 +262,12 @@ while running:
     pygame.display.update()
     clock.tick(60)
 
-if points[0] == points[1] and points[0] == 0 and points[2] == 0:
-    newscore = np.array([[Name, score]], dtype=object)
-    scoreboard = np.vstack((scoreboard,newscore))
-    np.savetxt("./log/score.txt", scoreboard, delimiter=",")
+if points[0] > 0 or points[1] > 0 or points[2] == 1:
+    scorefile = np.empty((n_record+1, 2), dtype=(np.unicode_, 32))
+    scorefile[:-1, 0] = scoreboard["name"]
+    scorefile[:-1, 1] = scoreboard["xp"]
+    scorefile[-1] = [Name, score]
+    np.savetxt("./log/score.txt", scorefile, delimiter=",", fmt=("%s","%s"))
 
 text = "null"
 if points[0] > points[1]:
@@ -261,7 +285,11 @@ disp.blit(box, ((W - wb) // 2, (W - hb) // 2))
 pygame.display.update()
 print("End of Game, Press Quit Button!")
 
-while True:
+running = True
+while running:
     for e in pygame.event.get():
         if e.type == QUIT:
-            pygame.quit()
+            running = False
+
+pygame.quit()
+sys.exit()
