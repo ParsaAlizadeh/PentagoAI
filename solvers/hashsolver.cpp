@@ -187,8 +187,12 @@ pll winScore(ll hsh)
 pll negamax(ll hsh, int col, int d, int alpha, int beta, int maxd)
 {
     pll scores = winScore(hsh);
-    if (d == 36 || scores.X > 0 || scores.Y) {
-        return {col * (scores.X - scores.Y), hsh};
+    if (d == 36 || scores.X > 0 || scores.Y > 0) {
+        int z = max(1, maxd - d + 1);
+        if (scores.X == scores.Y)
+            return {col * 2 * -EVALPOINT, hsh};
+        else
+            return {z * col * (scores.X - scores.Y), hsh};
     }
     if (d >= maxd) {
         return {col * eval(hsh), hsh};
@@ -220,6 +224,7 @@ pll negamax(ll hsh, int col, int d, int alpha, int beta, int maxd)
 int main()
 {
     preprocess();
+    srand(time(0));
 
     ll hsh = 0;
     int d = 0;
@@ -246,13 +251,23 @@ int main()
         maxd++;
     }
 
-    pll res = negamax(hsh, +1, d, -WINPOINT, WINPOINT, maxd);
-    ll next = res.Y;
+    ll next;
+    if (d==1) {
+        int x = rand() % 36;
+        next = modify(hsh, x, 1);
+        int pl = rand() % 4;
+        int k = (rand() % 2) * 2 -1;
+        next = rotPlate(next, pl, k);
+    }
+    else {
+        pll res = negamax(hsh, +1, d, -INF, INF, maxd);
+        next = res.Y;
+    }
     scores = winScore(next);
     cout << scores.X << sep << scores.Y << sep << (d == 36) << endl;
     draw(next);
 
-    cout << d << sep << maxd << sep << ord << sep << res.X << endl;
+    cout << d << sep << maxd << sep << ord << endl;
 
     return 0;
 }

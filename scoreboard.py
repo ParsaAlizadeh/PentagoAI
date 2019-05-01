@@ -61,15 +61,17 @@ def draw():
     box = pygame.surface.Surface((W_score, W))
     t1 = getFont(64).render("Winners:", True, (255, 255, 0))
     w1, h1 = t1.get_size()
-    box.blit(t1, ((W_score-w1)//2, 0))
+    box.blit(t1, ((W_score - w1) // 2, 0))
     xp = scoreboard["xp"]
-    for name, x in scoreboard[xp % 2 == 1]:
-        t2 = getFont(54).render(name+" -> "+ str(x), True, (255, 255, 0))
+    n_winners = len(scoreboard[xp % 2 == 1])
+    for i in range(min(n_winners, 10)):
+        name, x = scoreboard[xp % 2 == 1][i]
+        t2 = getFont(54).render(name + " -> " + str(x), True, (255, 255, 0))
         w2, h2 = t2.get_size()
-        box.blit(t2, ((W_score-w2)//2, h1))
+        box.blit(t2, ((W_score - w2) // 2, h1))
         h1 += h2
 
-    disp.blit(box, (W+W_score, sy[0]))
+    disp.blit(box, (W + W_score, sy[0]))
 
 
 def rotdraw():
@@ -159,7 +161,7 @@ W_score = 300
 r = 30
 rimg = pygame.image.load("img/iright.png")
 limg = pygame.image.load("img/ileft.png")
-disp = pygame.display.set_mode((W + 2*W_score, W))
+disp = pygame.display.set_mode((W + 2 * W_score, W))
 font = pygame.font.Font(None, 128)
 clock = pygame.time.Clock()
 
@@ -173,8 +175,8 @@ ry = np.linspace(0, W, 5, dtype=np.int32)[[1, 3]]
 sy = np.linspace(0, W, 7, dtype=np.int32)[1:-1:2]
 
 scorefile = np.loadtxt("./log/score.txt",
-                        delimiter=",",
-                        dtype=str)
+                       delimiter=",",
+                       dtype=str)
 scorefile[:, 1] = np.int64(scorefile[:, 1])
 dt = np.dtype([("name", np.unicode_, 32), ("xp", np.int_)])
 n_record = len(scorefile)
@@ -194,6 +196,8 @@ running = True
 
 while running:
     if sum(points) > 0:
+        if points[1] > points[0]:
+            sys.exit()
         running = False
         break
 
@@ -263,11 +267,11 @@ while running:
     clock.tick(60)
 
 if points[0] > 0 or points[1] > 0 or points[2] == 1:
-    scorefile = np.empty((n_record+1, 2), dtype=(np.unicode_, 32))
+    scorefile = np.empty((n_record + 1, 2), dtype=(np.unicode_, 32))
     scorefile[:-1, 0] = scoreboard["name"]
     scorefile[:-1, 1] = scoreboard["xp"]
     scorefile[-1] = [Name, score]
-    np.savetxt("./log/score.txt", scorefile, delimiter=",", fmt=("%s","%s"))
+    np.savetxt("./log/score.txt", scorefile, delimiter=",", fmt=("%s", "%s"))
 
 text = "null"
 if points[0] > points[1]:
